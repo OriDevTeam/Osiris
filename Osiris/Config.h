@@ -30,7 +30,7 @@ public:
         bool rainbow{ false };
         float rainbowSpeed{ 0.6f };
     };
-    
+
     struct ColorToggle : public Color {
         bool enabled{ false };
     };
@@ -76,27 +76,24 @@ public:
     };
     std::array<Triggerbot, 40> triggerbot;
 
-    struct {
+    struct Backtrack {
         bool enabled{ false };
         bool ignoreSmoke{ false };
         bool recoilBasedFov{ false };
         int timeLimit{ 200 };
     } backtrack;
 
-    struct {
+    struct AntiAim {
         bool enabled{ false };
         bool pitch{ false };
         bool yaw{ false };
         float pitchAngle{ 0.0f };
     } antiAim;
 
-    struct Glow {
+    struct Glow : ColorA {
         bool enabled{ false };
         bool healthBased{ false };
-        float thickness{ 1.0f };
-        float alpha{ 1.0f };
         int style{ 0 };
-        Color color;
     };
     std::array<Glow, 21> glow;
 
@@ -106,9 +103,11 @@ public:
             bool healthBased = false;
             bool blinking = false;
             bool wireframe = false;
+            bool cover = false;
+            bool ignorez = false;
             int material = 0;
         };
-        std::vector<Material> materials{ {}, {} };
+        std::vector<Material> materials{ {}, {}, {}, {} };
     };
 
     std::array<Chams, 18> chams;
@@ -152,7 +151,25 @@ public:
         std::array<Player, 6> players;
     } esp;
 
-    struct {
+    struct StreamProofESP {
+        std::unordered_map<std::string, Player> allies;
+        std::unordered_map<std::string, Player> enemies;
+        std::unordered_map<std::string, Weapon> weapons;
+        std::unordered_map<std::string, Projectile> projectiles;
+        std::unordered_map<std::string, Shared> lootCrates;
+        std::unordered_map<std::string, Shared> otherEntities;
+    } streamProofESP;
+
+    struct Font {
+        ImFont* tiny;
+        ImFont* medium;
+        ImFont* big;
+    };
+
+    std::vector<std::string> systemFonts{ "Default" };
+    std::unordered_map<std::string, Font> fonts;
+
+    struct Visuals {
         bool disablePostProcessing{ false };
         bool inverseRagdollGravity{ false };
         bool noFog{ false };
@@ -190,7 +207,7 @@ public:
         int playerModelT{ 0 };
         int playerModelCT{ 0 };
 
-        struct {
+        struct ColorCorrection {
             bool enabled = false;
             float blue = 0.0f;
             float red = 0.0f;
@@ -199,12 +216,24 @@ public:
             float ghost = 0.0f;
             float green = 0.0f;
             float yellow = 0.0f;
+
+            auto operator==(const ColorCorrection& o) const
+            {
+                return enabled == o.enabled
+                    && blue == o.blue
+                    && red == o.red
+                    && mono == o.mono
+                    && saturation == o.saturation
+                    && ghost == o.ghost
+                    && green == o.green
+                    && yellow == o.yellow;
+            }
         } colorCorrection;
     } visuals;
 
     std::array<item_setting, 36> skinChanger;
 
-    struct {
+    struct Sound {
         int chickenVolume{ 100 };
 
         struct Player {
@@ -217,19 +246,19 @@ public:
         std::array<Player, 3> players;
     } sound;
 
-    struct {
+    struct Style {
         int menuStyle{ 0 };
         int menuColors{ 0 };
     } style;
 
-    struct {
+    struct Misc {
         int menuKey{ 0x2D }; // VK_INSERT
         bool antiAfkKick{ false };
         bool autoStrafe{ false };
         bool bunnyHop{ false };
         bool customClanTag{ false };
         bool clocktag{ false };
-        std::string clanTag;
+        char clanTag[16];
         bool animatedClanTag{ false };
         bool fastDuck{ false };
         bool moonwalk{ false };
@@ -278,7 +307,7 @@ public:
         PurchaseList purchaseList;
     } misc;
 
-    struct {
+    struct Reportbot {
         bool enabled{ false };
         bool textAbuse{ false };
         bool griefing{ false };
@@ -289,7 +318,11 @@ public:
         int delay{ 1 };
         int rounds{ 1 };
     } reportbot;
+
+    void scheduleFontLoad(const std::string& name) noexcept;
+    bool loadScheduledFonts() noexcept;
 private:
+    std::vector<std::string> scheduledFonts{ "Default" };
     std::filesystem::path path;
     std::vector<std::string> configs;
 };
